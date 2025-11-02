@@ -7,6 +7,43 @@ import requests
 # ---------------- Helper Functions ---------------- #
 
 
+def create_movie_tiles(movies):
+    """
+    Generates the HTML grid content for all movies.
+
+    Args:
+        movies (dict): The dictionary of movies from movie_storage.get_movies()
+
+    Returns:
+        str: The HTML string for the movie grid.
+    """
+    html_content = ""
+
+    for title, data in movies.items():
+        movie_title = title.replace('"', "'")
+        movie_year = data['year']
+        poster_url = data['poster_url']
+
+        rating = data['rating']
+
+        # Build the HTML list item:
+        movie_html = f"""
+        <li>
+            <div class="movie">
+                <img class="movie-poster"
+                     src="{poster_url}" 
+                     alt="{movie_title} - Rating: {rating}">
+                <div class="movie-title">{movie_title}</div>
+                <div class="movie-year">({movie_year})</div>
+            </div>
+        </li>
+        """
+
+        html_content += movie_html
+
+    return html_content
+
+
 def safe_title_input(prompt):
     """
     Asks for a non-empty movie title until valid input is given.
@@ -74,6 +111,7 @@ def print_menu():
     print("7. Search movie")
     print("8. Movies sorted by rating")
     print("9. Movies sorted by year")
+    print("10. Generate Website")
 
 # ---------------- Core Functionality ---------------- #
 
@@ -109,26 +147,28 @@ def add_movie():
     movies = movie_storage.get_movies()
 
     if title in movies:
-            print(f"Movie {title} already exists!")
-            return
+        print(f"Movie {title} already exists!")
+        return
 
     try:
-        print(f"Searching OMbd for '{title}'...")
+        print(f"Searching OMDb for '{title}'...")
         movies_data = api.get_movie_data(title)
     except requests.exceptions.RequestException:
-        print("Error: Could not connect to OMDb API. Please check your internet connection.")
+        print(
+            "Error: Could not connect to OMDb API. Please check your internet connection.")
         return
-    
+
     if movies_data is None:
-        print(f"❌ Movie '{title}' not found in OMDb. Please try another title.")
+        print(
+            f"❌ Movie '{title}' not found in OMDb. Please try another title.")
         return
 
     movie_storage.add_movie(
-            title=movies_data["title"],
-            year=movies_data["year"],
-            rating=movies_data["rating"],
-            poster_url=movies_data["poster_url"]
-        )
+        title=movies_data["title"],
+        year=movies_data["year"],
+        rating=movies_data["rating"],
+        poster_url=movies_data["poster_url"]
+    )
 
     print(f"Movie {title} successfully added")
 
@@ -282,6 +322,47 @@ def movies_sorted_by_year():
         print(f"{title} ({data['year']}): {data['rating']}")
 
 
+def generate_website():
+    """
+    Generates a full HTML website from the movie database using a template.
+    """
+    TEMPLATE_PATH = "_static/index_template.html"
+    OUTPUT_PATH = "index.html"
+    APP_TITLE = "My Movie App"  # <--- Choose your title here!
+
+    # 2. Get all movie data
+    movies = movie_storage.get_movies()
+    if not movies:
+        print("Cannot generate website: The database is empty.")
+        return
+
+    # 3. Generate the movie grid HTML
+    movie_grid_html = create_movie_tiles(movies)
+
+    # 4. Read the template file
+    try:
+        with open(TEMPLATE_PATH, 'r') as f:
+            template_content = f.read()
+    except FileNotFoundError:
+        print(
+            f"Error: HTML template file not found at {TEMPLATE_PATH}. Check your _static folder.")
+        return
+
+    # 5. Replace the placeholders
+    final_html = template_content.replace("__TEMPLATE_TITLE__", APP_TITLE)
+    final_html = final_html.replace("__TEMPLATE_MOVIE_GRID__", movie_grid_html)
+
+    # 6. Write the final HTML file
+    try:
+        with open(OUTPUT_PATH, 'w') as f:
+            f.write(final_html)
+
+        # 7. Print success message
+        print("✅ Website was generated successfully.")
+    except Exception as e:
+        print(f"❌ Error writing the output file {OUTPUT_PATH}: {e}")
+
+
 # ---------------- Program Loop ---------------- #
 
 def run_menu():
@@ -293,7 +374,7 @@ def run_menu():
         try:
             print_menu()
             print()
-            choice = input("Enter choice (0–9): ").strip()
+            choice = input("Enter choice (0–10): ").strip()
             print()
 
             if choice == "0":
@@ -317,8 +398,10 @@ def run_menu():
                 movies_sorted_by_rating()
             elif choice == "9":
                 movies_sorted_by_year()
+            elif choice == "10":
+                generate_website()
             else:
-                print("Invalid choice. Please enter a number from 0–9.")
+                print("Invalid choice. Please enter a number from 0–10.")
 
             print()
             wait_for_enter()
