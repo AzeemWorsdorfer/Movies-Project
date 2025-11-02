@@ -1,0 +1,14 @@
+# 1. Python Artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# 2. Runtime and Output Files
+/data/movies.db      # The database file itself
+index.html           # The generated website output
+
+# 3. Environment and Sensitive Files
+.env                 # Contains API keys
+
+# 4. Operating System Files (Common)
+.DS_Store

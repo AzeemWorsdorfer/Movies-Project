@@ -1,0 +1,8 @@
+# Used for OMDb API calls
+requests
+
+# Used for database interactions
+SQLAlchemy
+
+# Used for loading environment variables
+python-dotenv

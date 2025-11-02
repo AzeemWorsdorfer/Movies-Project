@@ -1,6 +1,6 @@
 import random
 import statistics
-import movie_storage_sql as movie_storage
+import storage.movie_storage_sql as movie_storage
 import movies_api as api
 import requests
 
@@ -326,9 +326,10 @@ def generate_website():
     """
     Generates a full HTML website from the movie database using a template.
     """
-    TEMPLATE_PATH = "index_template.html"
+    TEMPLATE_PATH = "_static/index_template.html"
     OUTPUT_PATH = "index.html"
-    APP_TITLE = "My Movie App"  # <--- Choose your title here!
+    APP_TITLE = "My Movie App"  
+    
 
     # 2. Get all movie data
     movies = movie_storage.get_movies()
