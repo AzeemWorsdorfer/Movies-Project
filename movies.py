@@ -1,6 +1,6 @@
 import random
 import statistics
-import movie_storage
+import movie_storage_sql as movie_storage
 
 
 # ---------------- Helper Functions ---------------- #
@@ -75,6 +75,7 @@ def print_menu():
 
 # ---------------- Core Functionality ---------------- #
 
+
 def list_movies():
     """
     Lists all movies from database with their year and rating.
@@ -112,15 +113,13 @@ def delete_movie():
     """
     Deletes a movie from the database.
     """
-    movies = movie_storage.get_movies()
-
     title = safe_title_input("Enter movie name to delete: ")
-    if title not in movies:
-        print(f"Movie {title} doesn't exist")
-        return
 
-    movie_storage.delete_movie(title)
-    print(f"Movie {title} successfully deleted")
+    if movie_storage.delete_movie(title):
+        print(f"Movie {title} successfully deleted")
+    else:
+        # This catches the case where the movie was not in the DB
+        print(f"Movie {title} doesn't exist")
 
 
 def update_movie():
@@ -158,10 +157,12 @@ def stats():
     median = statistics.median(ratings)
 
     max_rating = max(ratings)
-    best_movies = [title for title, data in movies.items() if data['rating'] == max_rating]
+    best_movies = [title for title,
+                   data in movies.items() if data['rating'] == max_rating]
 
     min_rating = min(ratings)
-    worst_movies = [title for title, data in movies.items() if data['rating'] == min_rating]
+    worst_movies = [title for title,
+                    data in movies.items() if data['rating'] == min_rating]
 
     print(f"Average rating: {average:.1f}")
     print(f"Median rating: {median:.1f}")

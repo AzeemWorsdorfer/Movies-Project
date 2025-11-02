@@ -19,10 +19,11 @@ with engine.connect() as connection:
     connection.commit()
 
 
-def list_movies():
+def get_movies():
     """Retrieves all movies from the database."""
     with engine.connect() as connection:
-        result = connection.execute(text("SELECT title, year, rating"))
+        result = connection.execute(
+            text("SELECT title, year, rating FROM movies"))
         movies = result.fetchall()
     return {row[0]: {"year": row[1], "rating": row[2]} for row in movies}
 
@@ -45,10 +46,7 @@ def delete_movie(title):
         result = connection.execute(
             text("DELETE FROM movies WHERE title = :title"), {"title": title})
         connection.commit()
-        if result.rowcount == 0:
-            print(f"Movie '{title}' not found.")
-        else:
-            print(f"Movie '{title}' deleted successfully.")
+        return result.rowcount > 0
 
 
 def update_movie(title, rating):
@@ -57,9 +55,4 @@ def update_movie(title, rating):
         result = connection.execute(text("UPDATE movies SET rating = :rating WHERE title = :title"),
                                     {"title": title, "rating": rating})
         connection.commit()
-        if result.rowcount == 0:
-            print(f"Movie '{title}' not found.")
-        else:
-            print(f"Movie '{title}' updated successfully.")
-
-
+        return result.rowcount > 0
