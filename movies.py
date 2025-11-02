@@ -1,9 +1,11 @@
 import random
 import statistics
 import movie_storage_sql as movie_storage
-
+import movies_api as api
+import requests
 
 # ---------------- Helper Functions ---------------- #
+
 
 def safe_title_input(prompt):
     """
@@ -87,25 +89,47 @@ def list_movies():
         return
 
     print(f"{len(movies)} movies in total")
+    print("-" * 30)
+
     for title, data in movies.items():
-        print(f"{title} ({data['year']}): {data['rating']}")
+        print(f"🎬 {title} ({data['year']}): {data['rating']}")
+        # Display the poster URL so the user knows it was fetched
+        if data.get('poster_url') and data['poster_url'] != 'N/A':
+            print(f"   Poster: {data['poster_url']}")
+        print("-" * 30)
 
 
 def add_movie():
     """
-    Adds a new movie to the database.
+    Adds a new movie to the database using data fetched from OMDb API.
+    Handles connection errors and 'movie not found' errors.
     """
+    title = safe_title_input("Enter movie name: ")
+
     movies = movie_storage.get_movies()
 
-    title = safe_title_input("Enter movie name: ")
     if title in movies:
-        print(f"Movie {title} already exists!")
+            print(f"Movie {title} already exists!")
+            return
+
+    try:
+        print(f"Searching OMbd for '{title}'...")
+        movies_data = api.get_movie_data(title)
+    except requests.exceptions.RequestException:
+        print("Error: Could not connect to OMDb API. Please check your internet connection.")
+        return
+    
+    if movies_data is None:
+        print(f"❌ Movie '{title}' not found in OMDb. Please try another title.")
         return
 
-    rating = safe_float_input("Enter rating (1–10): ")
-    year = safe_int_input("Enter the year: ")
+    movie_storage.add_movie(
+            title=movies_data["title"],
+            year=movies_data["year"],
+            rating=movies_data["rating"],
+            poster_url=movies_data["poster_url"]
+        )
 
-    movie_storage.add_movie(title, year, rating)
     print(f"Movie {title} successfully added")
 
 
