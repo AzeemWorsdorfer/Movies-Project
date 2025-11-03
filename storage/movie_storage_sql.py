@@ -14,7 +14,10 @@ with engine.connect() as connection:
             title TEXT UNIQUE NOT NULL,
             year INTEGER NOT NULL,
             rating REAL NOT NULL,
-            poster_url TEXT
+            poster_url TEXT,
+            user_id INTERGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            UNIQUE(title, user_id)
         )
     """))
     connection.commit()
