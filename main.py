@@ -31,7 +31,7 @@ def create_movie_tiles(movies):
         <li>
             <div class="movie">
                 <img class="movie-poster"
-                     src="{poster_url}" 
+                     src="{poster_url}"
                      alt="{movie_title} - Rating: {rating}">
                 <div class="movie-title">{movie_title}</div>
                 <div class="movie-year">({movie_year})</div>
@@ -51,6 +51,7 @@ def safe_title_input(prompt):
     while True:
         title = input(prompt).strip()
         if title:
+            
             return title
         print("Movie title cannot be empty. Please try again.")
 
@@ -93,34 +94,17 @@ def print_welcome():
     """
     Prints the welcome message for the program.
     """
-    print("********** My Movies Database **********\n")
+    print("********** My Movies App **********\n")
 
-
-def print_menu():
-    """
-    Displays the menu options for the user.
-    """
-    print("Menu:")
-    print("0. Exit")
-    print("1. List movies")
-    print("2. Add movie")
-    print("3. Delete movie")
-    print("4. Update movie")
-    print("5. Stats")
-    print("6. Random movie")
-    print("7. Search movie")
-    print("8. Movies sorted by rating")
-    print("9. Movies sorted by year")
-    print("10. Generate Website")
 
 # ---------------- Core Functionality ---------------- #
 
 
-def list_movies():
+def list_movies(user_id):
     """
     Lists all movies from database with their year and rating.
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     if not movies:
         print("No movies in the database.")
@@ -137,14 +121,14 @@ def list_movies():
         print("-" * 30)
 
 
-def add_movie():
+def add_movie(user_id):
     """
     Adds a new movie to the database using data fetched from OMDb API.
     Handles connection errors and 'movie not found' errors.
     """
     title = safe_title_input("Enter movie name: ")
 
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     if title in movies:
         print(f"Movie {title} already exists!")
@@ -167,30 +151,31 @@ def add_movie():
         title=movies_data["title"],
         year=movies_data["year"],
         rating=movies_data["rating"],
-        poster_url=movies_data["poster_url"]
+        poster_url=movies_data["poster_url"],
+        user_id=user_id
     )
 
     print(f"Movie {title} successfully added")
 
 
-def delete_movie():
+def delete_movie(user_id):
     """
     Deletes a movie from the database.
     """
     title = safe_title_input("Enter movie name to delete: ")
 
-    if movie_storage.delete_movie(title):
+    if movie_storage.delete_movie(title, user_id):
         print(f"Movie {title} successfully deleted")
     else:
         # This catches the case where the movie was not in the DB
         print(f"Movie {title} doesn't exist")
 
 
-def update_movie():
+def update_movie(user_id):
     """
     Updates the rating of a movie in the database.
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     title = safe_title_input("Enter movie name: ")
     if title not in movies:
@@ -199,11 +184,11 @@ def update_movie():
 
     rating = safe_float_input("Enter new movie rating (1–10): ")
 
-    movie_storage.update_movie(title, rating)
+    movie_storage.update_movie(title, rating, user_id)
     print(f"Movie {title} successfully updated")
 
 
-def stats():
+def stats(user_id):
     """
     Displays statistics about all movies in the database:
     - Average rating
@@ -211,7 +196,7 @@ def stats():
     - Best movie(s)
     - Worst movie(s)
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
     if not movies:
         print("No movies in the database.")
         return
@@ -234,11 +219,11 @@ def stats():
     print(f"Worst movie(s) ({min_rating}): {', '.join(worst_movies)}")
 
 
-def random_movie():
+def random_movie(user_id):
     """
     Picks and displays a random movie from the database.
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     if not movies:
         print("No movies in the database.")
@@ -252,12 +237,12 @@ def random_movie():
     print(f"Your movie for tonight: {title} ({year}), rated {rating}")
 
 
-def search_movie():
+def search_movie(user_id):
     """
     Searches for movies containing a user-provided string in the title
     and displays them with year and rating.
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     query = safe_title_input("Enter part of the movie name: ").lower()
     found = False
@@ -271,12 +256,12 @@ def search_movie():
         print("No matching movies found.")
 
 
-def movies_sorted_by_rating():
+def movies_sorted_by_rating(user_id):
     """
     Lists all movies sorted by rating (highest to lowest).
     Handles empty database gracefully.
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     if not movies:
         print("No movies in the database to sort.")
@@ -293,12 +278,12 @@ def movies_sorted_by_rating():
         print(f"{title} ({data['year']}): {data['rating']}")
 
 
-def movies_sorted_by_year():
+def movies_sorted_by_year(user_id):
     """
     Lists all movies sorted by year (chronological order).
     Asks the user whether to display latest movies first or last
     """
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
 
     if not movies:
         print("No movies in the database to sort.")
@@ -322,17 +307,16 @@ def movies_sorted_by_year():
         print(f"{title} ({data['year']}): {data['rating']}")
 
 
-def generate_website():
+def generate_website(user_id, user_name):
     """
     Generates a full HTML website from the movie database using a template.
     """
     TEMPLATE_PATH = "_static/index_template.html"
-    OUTPUT_PATH = "index.html"
-    APP_TITLE = "My Movie App"  
-    
+    OUTPUT_PATH = f"{user_name.replace(' ', '_')}.html"
+    APP_TITLE = f"{user_name}'s Movie App"
 
     # 2. Get all movie data
-    movies = movie_storage.get_movies()
+    movies = movie_storage.get_movies(user_id)
     if not movies:
         print("Cannot generate website: The database is empty.")
         return
@@ -365,44 +349,124 @@ def generate_website():
 
 
 # ---------------- Program Loop ---------------- #
+# In main.py, add these functions above run_menu:
 
-def run_menu():
+def get_all_users():
+    """Retrieves all users from the database for display."""
+    # Use a direct query since this logic isn't in movie_storage yet
+    import sqlite3
+    try:
+        conn = sqlite3.connect('data/movies.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name FROM users")
+        users = cursor.fetchall()
+        conn.close()
+        return users
+    except sqlite3.OperationalError:
+        # Happens if the database file is new and the table hasn't been created yet.
+        return []
+
+
+def select_user():
     """
-    Runs the main program loop, handling user input and actions.
-    Includes a global try/except to prevent crashes.
+    Displays existing users, allows creation of a new user, and returns the selected user's ID and name.
+    """
+    while True:
+        users = get_all_users()
+        print("\nWelcome to the Movie App! 🎬")
+        print("Select a user:")
+
+        user_map = {}
+        for i, (user_id, name) in enumerate(users, 1):
+            print(f"{i}. {name}")
+            user_map[str(i)] = (user_id, name)
+
+        create_option = len(users) + 1
+        print(f"{create_option}. Create new user")
+
+        choice = input("Enter choice: ").strip()
+
+        if choice in user_map:
+            user_id, name = user_map[choice]
+            print(f"\nWelcome back, {name}! 🎬")
+            return user_id, name
+
+        elif choice == str(create_option):
+            new_name = safe_title_input("Enter new username: ")
+
+            # Use the storage function to create the new user
+            new_id = movie_storage.create_new_user(new_name)
+
+            if new_id:
+                print(f"✅ User '{new_name}' created!")
+                return new_id, new_name
+            else:
+                print(
+                    f"User '{new_name}' already exists. Please choose another name.")
+
+        else:
+            print("Invalid choice. Please try again.")
+
+
+def print_menu_with_user(user_name):
+    """
+    Displays the menu options for the user, showing the active user's name.
+    """
+    print(f"\n--- Active User: {user_name} ---")
+    print("Menu:")
+    print("0. Exit")
+    print("1. List movies")
+    print("2. Add movie")
+    print("3. Delete movie")
+    print("4. Update movie")
+    print("5. Stats")
+    print("6. Random movie")
+    print("7. Search movie")
+    print("8. Movies sorted by rating")
+    print("9. Movies sorted by year")
+    print("10. Generate Website")
+    print("11. Switch User")
+
+
+def run_user_session(user_id, user_name):
+    """
+    Runs the main program loop for an active, logged-in user.
     """
     while True:
         try:
-            print_menu()
+            print_menu_with_user(user_name)
             print()
-            choice = input("Enter choice (0–10): ").strip()
+            choice = input("Enter choice (0–11): ").strip()
             print()
 
             if choice == "0":
-                print("Bye 👋 Thanks for using My Movies Database!")
-                break
+                print(f"Bye, {user_name}! 👋")
+                return False
+            elif choice == "11":
+                print(f"Switching user from {user_name}...")
+                return True
             elif choice == "1":
-                list_movies()
+                list_movies(user_id)
             elif choice == "2":
-                add_movie()
+                add_movie(user_id)
             elif choice == "3":
-                delete_movie()
+                delete_movie(user_id)
             elif choice == "4":
-                update_movie()
+                update_movie(user_id)
             elif choice == "5":
-                stats()
+                stats(user_id)
             elif choice == "6":
-                random_movie()
+                random_movie(user_id)
             elif choice == "7":
-                search_movie()
+                search_movie(user_id)
             elif choice == "8":
-                movies_sorted_by_rating()
+                movies_sorted_by_rating(user_id)
             elif choice == "9":
-                movies_sorted_by_year()
+                movies_sorted_by_year(user_id)
             elif choice == "10":
-                generate_website()
+                generate_website(user_id, user_name)
             else:
-                print("Invalid choice. Please enter a number from 0–10.")
+                print("Invalid choice. Please enter a number from 0–11.")
 
             print()
             wait_for_enter()
@@ -417,10 +481,26 @@ def run_menu():
 
 def main():
     """
-    Main function to start the program.
+    Main function to start the program and handle user switching.
     """
+    movie_storage.initialize_database()
+    
     print_welcome()
-    run_menu()
+    app_running = True
+    while app_running:
+        user_id, user_name = select_user()
+
+        
+        session_running = True
+        while session_running:
+            
+            switch_user_requested = run_user_session(user_id, user_name)
+
+            if switch_user_requested is False:
+                app_running = False
+                session_running = False
+            elif switch_user_requested is True:
+                session_running = False
 
 
 if __name__ == "__main__":

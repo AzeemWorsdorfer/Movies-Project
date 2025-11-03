@@ -24,7 +24,7 @@ def get_movie_data(title):
           requests.exceptions.RequestException: If there's a connection error.
       """
 
-    search_url = OMBD_URL + title
+    search_url = OMDB_URL + title
 
     try:
         response = requests.get(search_url, timeout=10)
