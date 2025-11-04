@@ -116,3 +116,25 @@ def update_movie(title, rating, user_id):
                                     {"title": title, "rating": rating, "user_id": user_id})
         connection.commit()
         return result.rowcount > 0
+
+
+def delete_movies_by_user_id(user_id):
+    """Deletes all movies associated with a given user ID."""
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("DELETE FROM movies WHERE user_id = :user_id"),
+            {"user_id": user_id}
+        )
+        connection.commit()
+        return result.rowcount
+
+
+def delete_user(user_id):
+    """Deletes a user from the users table."""
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("DELETE FROM users WHERE id = :user_id"),
+            {"user_id": user_id}
+        )
+        connection.commit()
+        return result.rowcount > 0
