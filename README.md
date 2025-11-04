@@ -1,43 +1,64 @@
-# My Movie Database App 🎬
+# 🎬 My Movies App
 
-A simple **Python command-line application** for managing a personal movie collection. It uses the **OMDb API** to automatically fetch movie details and stores everything in a **SQLite** database.
+Welcome to **My Movies App**, a command-line application designed to help users manage, rate, and track their personal movie collections. The application now supports **multiple user profiles** with isolated movie databases and features a clean, modular architecture for easy maintenance and future expansion.
 
----
+## ✨ Features
 
-## ✨ Key Features
+* **Multi-User Profiles:** Each user maintains a unique, personalized movie collection, ratings, and statistics.
+* **User Management:** Easily create new profiles, switch between existing users (Option 11), or delete your profile and all associated data (Option 12).
+* **OMDb Integration:** Add movies by name; the app automatically fetches the release year, professional rating, and poster URL.
+* **CRUD Operations:** List, Add, Update, and Delete movies.
+* **Movie Stats:** Get quick stats, including average rating, median rating, and lists of best/worst movies.
+* **Sorting & Searching:** Sort movies by rating or year, and search titles using keywords.
+* **Website Generation:** Generate a static HTML webpage showcasing the active user's movie collection and poster images.
 
-* **Quick Add:** Automatically fetches movie title, year, rating, and poster URL from OMDb when you add a movie.
-* **Database:** Stores data locally using SQLAlchemy and SQLite (in the `/data` folder).
-* **Stats:** Calculates average rating, median rating, and identifies best/worst movies.
-* **Web View:** Generates a basic static HTML website (`index.html`) to display your collection.
+## ⚙️ Architecture Overview
 
----
+The application is structured into a modular package (`app/`) for maintainability and separation of concerns:
 
-## ⚙️ Setup
+| File/Module | Responsibility | Details |
+| :--- | :--- | :--- |
+| `main.py` | **Entry Point** | Initializes the database schema and starts the main application loop. |
+| `app/cli.py` | **UI / Flow Control** | Handles all user input (`input()`), output (`print()`), menu presentation, and manages the user session life cycle (select/switch/delete user). |
+| `app/core.py` | **Business Logic** | Contains all core application logic: movie CRUD operations, statistics calculation, API interaction, and website generation. |
+| `storage/` | **Data Persistence** | Manages all SQLAlchemy database interactions for `users`, `movies`, and schema setup. |
+
+## 🚀 Setup and Installation
 
 ### Prerequisites
 
-* Python 3.6+
-* An API Key from [OMDb API](http://www.omdbapi.com/apikey.aspx)
+You need **Python 3.8+** installed on your system.
 
-### Installation Steps
+### Installation
 
-1.  **Install Dependencies:**
+1.  **Clone the Repository:**
+    ```bash
+    git clone [Your Repository URL Here]
+    cd Movies-Project
+    ```
+
+2.  **Create a Virtual Environment** (Recommended):
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    ```
+
+3.  **Install Dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
+    *(Ensure your `requirements.txt` includes `requests` and `SQLAlchemy`)*
 
----
-
-## 🚀 How to Run
-
-1.  **Start the application:**
-    ```bash
-    python main.py
+4.  **Set API Key:**
+    The application uses the OMDb API. You need to create a free account and set your API key in the `.env` file located in the root directory:
+    ```
+    # .env
+    OMDB_API_KEY=your_omdb_api_key_here
     ```
 
-2.  **Use the Menu:** Follow the on-screen menu.
-    * Use **`2` (Add movie)** to search OMDb and save new movies.
-    * Use **`10` (Generate Website)** to create the `index.html` file in the root directory.
+## ▶️ How to Run
 
----
+Execute the main file to start the application:
+
+```bash
+python3 main.py
