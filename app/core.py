@@ -1,5 +1,6 @@
 import random
 import statistics
+import requests
 import storage.movie_storage_sql as movie_storage
 import movies_api as api
 import app.cli as cli
